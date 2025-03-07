@@ -12,64 +12,93 @@
 
 #include "../philo.h"
 
-void	init_philo(t_phil *phil, t_fork **forks, t_params *params, int i)
+t_table	*init_program(int ac, char **av)
 {
-	phil->params = params;
-	phil->pos = i;
-	phil->last_meal = 0;
-	phil->meal_count = 0;
-	phil->r_fork = &((*forks)[i]);
-	phil->r_taken = 0;
-	phil->l_taken = 0;
-	if (i == params->num - 1)
-		phil->l_fork = &((*forks)[0]);
-	else
-		phil->l_fork = &((*forks)[i + 1]);
-	phil->l_fork->used = 0;
-	pthread_mutex_init(&(phil->m_last_meal), NULL);
-	pthread_mutex_init(&(phil->l_fork->lock), NULL);
+	t_table	*table;
+
+	table = malloc(sizeof(t_table) * 1);
+	if (!table)
+		return (NULL_ERROR);
+	table->nb_philo = ft_atoi(av[1]);
+	table->time_to_die = ft_atoi(av[2]);
+	table->time_to_eat = ft_atoi(av[3]);
+	table->time_to_sleep = ft_atoi(av[4]);
+	table->min_nb_meal = -1;
+	if (ac == 6)
+		table->min_nb_meal = ft_atoi(av[5]);
+	table->philos = init_philosophers(table);
+	if (!table->philos)
+		return (NULL_ERROR);
+	if (!init_global_mutexes(table))
+		return (NULL_ERROR);
+	table->sim_running = FALSE;
+	return (table);
 }
 
-int	create_philos(t_phil **philos, t_fork **forks, t_params	*params)
+t_philo	**init_philosophers(t_table *table)
 {
-	int	i;
+	t_philo			**philos;
+	unsigned int	i;
 
-	*philos = malloc(sizeof(t_phil) * params->num);
-	if (!(*philos))
-		return (0);
-	*forks = malloc(sizeof(t_fork) * params->num);
-	if (!(*forks))
-	{
-		free(*philos);
-		return (0);
-	}
+	philos = malloc(sizeof(t_philo) * table->nb_philo);
+	if (!philos)
+		return (NULL_ERROR);
 	i = 0;
-	while (i < params->num)
+	while (i < table->nb_philo)
 	{
-		init_philo(&(*philos)[i], forks, params, i);
+		philos[i] = malloc(sizeof(t_philo) * 1);
+		if (!philos[i])
+			return (NULL_ERROR);
+		if (pthread_mutex_init(&philos[i]->m_meal, 0) != 0)
+			return (NULL_ERROR);
+		philos[i]->table = table;
+		philos[i]->id = i;
+		philos[i]->nb_meal = 0;
+		philos[i]->last_meal = 0;
+		philos[i]->status = THINKING;
+		assign_forks(philos[i]);
 		i++;
 	}
-	return (1);
+	return (philos);
 }
 
-int	init_params(t_params *params, int argc, char **argv)
+pthread_mutex_t	*init_forks(t_table *table)
 {
-	params->num = ft_atoi(argv[1]);
-	params->time_to_die = ft_atoi(argv[2]);
-	params->time_to_eat = ft_atoi(argv[3]);
-	params->time_to_sleep = ft_atoi(argv[4]);
-	params->meal_max = -1;
-	if (argc > 5)
+	pthread_mutex_t	*forks;
+	size_t			i;
+
+	forks = malloc(sizeof(pthread_mutex_t) * table->nb_philo);
+	if (!forks)
+		return (NULL_ERROR);
+	i = 0;
+	while (i < table->nb_philo)
 	{
-		params->meal_max = ft_atoi(argv[5]);
-		if (ft_atoi(argv[5]) < 0)
-			return (0);
+		if (pthread_mutex_init(&forks[i], 0) != 0)
+			return (NULL_ERROR);
+		i++;
 	}
-	params->is_dead = 0;
-	if (params->num <= 0 || params->time_to_die < 0 || params->time_to_eat < 0
-		|| params->time_to_sleep < 0)
-		return (0);
-	pthread_mutex_init(&(params->console_mutex), NULL);
-	pthread_mutex_init(&(params->m_is_dead), NULL);
-	return (1);
+	return (forks);
+}
+
+int	init_global_mutexes(t_table *table)
+{
+	table->m_forks = init_forks(table);
+	if (!table->m_forks)
+		return (FALSE);
+	if (pthread_mutex_init(&table->m_simulation, 0) != 0)
+		return (ERROR);
+	if (pthread_mutex_init(&table->m_print, 0) != 0)
+		return (ERROR);
+	return (TRUE);
+}
+
+void	assign_forks(t_philo *philo)
+{
+	philo->fork[0] = philo->id;
+	philo->fork[1] = (philo->id + 1) % philo->table->nb_philo;
+	if (philo->id % 2)
+	{
+		philo->fork[0] = (philo->id + 1) % philo->table->nb_philo;
+		philo->fork[1] = philo->id;
+	}
 }

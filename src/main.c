@@ -12,28 +12,22 @@
 
 #include "../philo.h"
 
-int	free_all(t_phil*philos, t_fork *forks, int exit_code)
+int	main(int ac, char **av)
 {
-	free(philos);
-	free(forks);
-	return (exit_code);
-}
+	t_table	*table;
 
-int	main(int argc, char **argv)
-{
-	t_params	params;
-	t_phil		*philos;
-	t_fork		*forks;
-
-	if (!wrong_arg(argv[1], argv[2], argv[3], argv[4]))
-		return (wrong_format());
-	if (!init_params(&params, argc, argv))
-		return (free_all(NULL, NULL, 1));
-	if (!create_philos(&philos, &forks, &params))
-		return (free_all(NULL, NULL, 1));
-	if (!create_threads(philos, &params))
-		return (free_all(philos, forks, 1));
-	if (!wait_threads(philos, &params))
-		return (free_all(philos, forks, 1));
-	return (free_all(philos, forks, 0));
+	table = NULL;
+	if (check_input(ac, av) == ERROR)
+	{
+		wrong_format();
+		return (process_exit(1, table, "Invalid arguments: check count/types"));
+	}
+	table = init_program(ac, av);
+	if (!table)
+		return (process_exit(1, table, "Error while initializing the program"));
+	if (start_simulation(table) == ERROR)
+		return (process_exit(2, table, "Error while threading the philosophy"));
+	if (stop_simulation(table) == ERROR)
+		return (process_exit(2, table, "Error while stopping the simulation"));
+	return (process_exit(SUCCESS, table, NULL));
 }

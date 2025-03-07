@@ -1,49 +1,41 @@
-.SILENT:
+NAME        = philo
+OBJDIR      = objects/
+SRCDIR      = src/
 
-# Compiler and flags
-CC      := gcc
-CFLAGS  := -Wall -Wextra -Werror
+CC          = gcc
+CFLAGS      = -Werror -Wextra -Wall
 
-# Directories
-SRC_DIR := ./src
-OBJ_DIR := ./obj
+YELLOW      = \033[1;33m
+GREEN       = \033[1;32m
+RED         = \033[1;31m
+RESET       = \033[0m
 
-# Files
-SRCS    := $(SRC_DIR)/main.c $(SRC_DIR)/handler.c
-OBJS    := $(OBJ_DIR)/main.o $(OBJ_DIR)/handler.o
-NAME    := philo
-HEADERS := philo.h
+SRC         = algo.c free.c handler.c init.c main.c monitoring.c output.c \
+              sim.c time.c utils.c
+SRCS        = $(addprefix $(SRCDIR), $(SRC))
+OBJ         = $(addprefix $(OBJDIR), $(SRC:.c=.o))
 
-# Colors and emojis
-GREEN   := \033[0;32m
-YELLOW  := \033[38;5;226m
-ORANGE  := \033[38;5;208m
-RESET   := \033[0m
-CHECK   := ✅
+all: $(OBJDIR) $(NAME)
 
-# Rules
-all: $(NAME)
+$(OBJDIR):
+	@mkdir -p $(OBJDIR)
 
-$(NAME): $(OBJ_DIR) $(OBJS)
-	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
-	@echo "$(GREEN)Compilation successful! $(CHECK)$(RESET)"
+$(OBJDIR)%.o: $(SRCDIR)%.c
+	@echo "$(YELLOW)Compiling $<...$(RESET)"
+	@$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/main.o: $(SRC_DIR)/main.c | $(OBJ_DIR)
-	@$(CC) $(CFLAGS) -c $(SRC_DIR)/main.c -o $(OBJ_DIR)/main.o
-
-$(OBJ_DIR)/handler.o: $(SRC_DIR)/handler.c | $(OBJ_DIR)
-	@$(CC) $(CFLAGS) -c $(SRC_DIR)/handler.c -o $(OBJ_DIR)/handler.o
-
-$(OBJ_DIR):
-	@mkdir -p $(OBJ_DIR)
+$(NAME): $(OBJ)
+	@echo "$(YELLOW)Compiling $(NAME)...$(RESET)"
+	@$(CC) $(CFLAGS) -o $(NAME) $(OBJ)
+	@echo "$(GREEN)./$(NAME) ready$(RESET)"
 
 clean:
-	@rm -rf $(OBJ_DIR)
-	@echo "$(ORANGE)Object files cleaned! $(CHECK)$(RESET)"
+	@echo "$(RED)Removing object files...$(RESET)"
+	@rm -rf $(OBJDIR)
 
 fclean: clean
+	@echo "$(RED)Removing $(NAME)...$(RESET)"
 	@rm -f $(NAME)
-	@echo "$(ORANGE)Executable $(NAME) removed! $(CHECK)$(RESET)"
 
 re: fclean all
 

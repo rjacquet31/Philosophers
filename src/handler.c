@@ -12,48 +12,6 @@
 
 #include "../philo.h"
 
-int	ft_atoi(char *str)
-{
-	int	i;
-	int	res;
-	int	sign;
-
-	res = 0;
-	i = 0;
-	sign = 1;
-	while (str[i] == 32 || (str[i] >= 9 && str[i] <= 13))
-		i++;
-	while (str[i] == '-' || str[i] == '+')
-	{
-		if (str[i] == '-')
-			sign = sign * -1;
-		i++;
-	}
-	while (str[i] >= '0' && str[i] <= '9')
-	{
-		res = res * 10 + (str[i] - '0');
-		i++;
-	}
-	if (res * sign < 0)
-		return (0);
-	else
-		return (res * sign);
-}
-
-int	is_only_digit(char *str)
-{
-	int	i;
-
-	i = 0;
-	while (str[i])
-	{
-		if (str[i] < '0' || str[i] > '9')
-			return (0);
-		i++;
-	}
-	return (1);
-}
-
 int	wrong_format(void)
 {
 	printf(RED "Erreur : Mauvaise utilisation du programme.\n" RESET);
@@ -69,16 +27,40 @@ int	wrong_format(void)
 	printf(RESET " : Temps nécessaire pour manger (en ms)\n");
 	printf("  - " YELLOW "time_to_sleep" );
 	printf(RESET " : Temps de sommeil après avoir mangé (en ms)\n");
-	return (1);
+	return (ERROR);
 }
 
-int	wrong_arg(char *av1, char *av2, char *av3, char *av4)
+int digits(const char *str)
 {
-	if (!ft_atoi(av1) || !ft_atoi(av2) || !ft_atoi(av3) || !ft_atoi(av4))
-		return (0);
-	else if (!is_only_digit(av1) || !is_only_digit(av2)
-		|| !is_only_digit(av3) || !is_only_digit(av4))
-		return (0);
-	else
-		return (1);
+    int i;
+
+    i = 0;
+    while (str[i] != '\0')
+    {
+        if (str[i] < '0' || str[i] > '9')
+            return (0);
+        i++;
+    }
+    return (1);
+}
+
+int	check_input(int ac, char **av)
+{
+	size_t	i;
+	int		nb;
+
+	i = 0;
+	if (ac - 1 < 4 || ac - 1 > 5)
+		return (ERROR);
+	if (digits(av[1]) == 0 || digits(av[2]) == 0
+		|| digits(av[3]) == 0 || digits(av[4]) == 0)
+		return (ERROR);
+	while ((int)++i < ac)
+	{
+		nb = ft_atoi(av[i]);
+		if ((i == 1 && nb < 1) || (i == 2 && nb < 1)
+			|| (i != 1 && nb < 0) || nb > INT_MAX)
+			return (ERROR);
+	}
+	return (SUCCESS);
 }

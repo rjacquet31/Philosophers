@@ -12,11 +12,36 @@
 
 #include "../philo.h"
 
-time_t	get_time_in_ms(void)
+time_t	get_ms(void)
 {
-	struct timeval		tv;
+	struct timeval	time;
 
-	gettimeofday(&tv, NULL);
-	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+	gettimeofday(&time, NULL);
+	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
 }
 
+time_t	get_ts(t_philo *philo)
+{
+	return (get_ms() - philo->table->start_time);
+}
+
+int	ft_msleep(unsigned long milliseconds)
+{
+	struct timeval	start;
+	struct timeval	current;
+	unsigned long	elapsed;
+
+	if (!milliseconds)
+		return (-1);
+	gettimeofday(&start, NULL);
+	while (1)
+	{
+		usleep(200);
+		gettimeofday(&current, NULL);
+		elapsed = ((current.tv_sec - start.tv_sec) * 1000)
+			+ ((current.tv_usec - start.tv_usec) / 1000);
+		if (elapsed >= milliseconds)
+			break ;
+	}
+	return (0);
+}

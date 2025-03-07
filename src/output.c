@@ -12,14 +12,27 @@
 
 #include "../philo.h"
 
-void	print_status(t_phil *phil, char *status)
+void	process_status(t_philo *philo, time_t ts, t_status new)
 {
-	pthread_mutex_lock(&(phil->params->m_output));
-	if (phil->params->end)
+	int	running;
+
+	philo->status = new;
+	pthread_mutex_lock(&philo->table->m_print);
+	pthread_mutex_lock(&philo->table->m_simulation);
+	running = philo->table->sim_running;
+	pthread_mutex_unlock(&philo->table->m_simulation);
+	if (running || philo->status == DEAD)
 	{
-		pthread_mutex_unlock(&(phil->params->m_output));
-		return ;
+		if (philo->status == DEAD)
+			printf("%ld %d died\n", ts, (philo->id) + 1);
+		else if (philo->status == EATING)
+			printf("%ld %d is eating\n", ts, (philo->id) + 1);
+		else if (philo->status == SLEEPING)
+			printf("%ld %d is sleeping\n", ts, (philo->id) + 1);
+		else if (philo->status == THINKING)
+			printf("%ld %d is thinking\n", ts, (philo->id) + 1);
+		else if (philo->status == LEFT_FORK || philo->status == RIGHT_FORK)
+			printf("%ld %d has taken a fork\n", ts, (philo->id) + 1);
 	}
-	printf("%ld %d %s\n", get_time_in_ms() - phil->params->start_time, phil->pos + 1, status);
-	pthread_mutex_unlock(&(phil->params->m_output));
+	pthread_mutex_unlock(&philo->table->m_print);
 }
