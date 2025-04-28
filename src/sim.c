@@ -21,7 +21,7 @@ int	start_simulation(t_table *table)
 	while (++i < table->nb_philo)
 	{
 		if (pthread_create(&table->philos[i]->thread, NULL,
-				&run_philosophy, table->philos[i]) != 0)
+				&run_simulation, table->philos[i]) != 0)
 			return (ERROR);
 	}
 	if (table->nb_philo > 1)
@@ -45,7 +45,7 @@ int	stop_simulation(t_table *table)
 	return (SUCCESS);
 }
 
-void	*run_philosophy(void *ptr)
+void	*run_simulation(void *ptr)
 {
 	t_philo	*philo;
 

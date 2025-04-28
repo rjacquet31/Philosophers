@@ -13,7 +13,10 @@
 #ifndef PHILO_H
 # define PHILO_H
 
-// libraries
+/* ************************************************************************** */
+/*                                Libraries                                   */
+/* ************************************************************************** */
+
 # include <pthread.h>
 # include <stdlib.h>
 # include <stdio.h>
@@ -21,7 +24,10 @@
 # include <unistd.h>
 # include <limits.h>
 
-// defines
+/* ************************************************************************** */
+/*                                 Defines                                    */
+/* ************************************************************************** */
+
 # define TRUE 1
 # define FALSE 0
 # define ERROR -1
@@ -31,7 +37,10 @@
 # define YELLOW  "\033[1;33m"
 # define RESET   "\033[0m"
 
-// struct
+/* ************************************************************************** */
+/*                                 Structures                                 */
+/* ************************************************************************** */
+
 typedef enum e_status
 {
 	DEAD = 0,
@@ -71,40 +80,76 @@ typedef struct s_philo
 	pthread_mutex_t	m_meal;
 	struct s_table	*table;
 }				t_philo;
-// algo.c
+
+/* ************************************************************************** */
+/*                                 Algo.c                                     */
+/* ************************************************************************** */
+
 void				*dead(t_philo *philo);
 void				start_eating_then_sleeping(t_philo *philo);
 void				start_thinking(t_philo *philo);
-// free.c
+
+/* ************************************************************************** */
+/*                                 Free.c                                     */
+/* ************************************************************************** */
+
 void				free_table(t_table *table);
 void				destroy_mutexes(t_table *table);
 int					process_exit(int exit_id, t_table *table, char *msg);
-// handler.c
+
+/* ************************************************************************** */
+/*                                Handler.c                                   */
+/* ************************************************************************** */
+
 int					wrong_format(void);
 int					check_input(int ac, char **av);
-// init.c
+
+/* ************************************************************************** */
+/*                                 Init.c                                     */
+/* ************************************************************************** */
+
 t_table				*init_program(int ac, char **av);
 t_philo				**init_philosophers(t_table *table);
 pthread_mutex_t		*init_forks(t_table *table);
 int					init_global_mutexes(t_table *table);
 void				assign_forks(t_philo *philo);
-// monitoring.c
+
+/* ************************************************************************** */
+/*                             Monitoring.c                                  */
+/* ************************************************************************** */
+
 void				*monitor_philosophers(void *table);
 int					is_simulation_running(t_philo *philo);
 int					is_someone_dead(t_philo *philo);
 void				set_simulation_status(t_table *table, int status);
 int					is_end_of_dinner(t_table *table);
-// output.c
+
+/* ************************************************************************** */
+/*                                Output.c                                    */
+/* ************************************************************************** */
+
 void				process_status(t_philo *philo, time_t ts, t_status new);
-// sim.c
+
+/* ************************************************************************** */
+/*                                 Sim.c                                      */
+/* ************************************************************************** */
+
 int					start_simulation(t_table *table);
 int					stop_simulation(t_table *table);
-void				*run_philosophy(void *philo);
-// time.c
+void				*run_simulation(void *philo);
+
+/* ************************************************************************** */
+/*                                 Time.c                                     */
+/* ************************************************************************** */
+
 time_t				get_ms(void);
 time_t				get_ts(t_philo *philo);
 int					ft_msleep(unsigned long milliseconds);
-// utils.c
+
+/* ************************************************************************** */
+/*                                Utils.c                                     */
+/* ************************************************************************** */
+
 int					ft_atoi(const char *str);
 
 #endif

@@ -12,36 +12,44 @@
 
 #include "../philo.h"
 
-void	*monitor_philosophers(void *ptr)
+void	*monitor_philosophers(void *arg)
 {
 	t_table	*table;
 
-	table = (t_table *)ptr;
+	table = (t_table *)arg;
 	set_simulation_status(table, TRUE);
-	while (1)
+	while (is_simulation_running(table->philos[0]))
 	{
-		if (is_end_of_dinner(table) == TRUE)
-			return (NULL);
+		if (is_end_of_dinner(table))
+			break ;
 		ft_msleep(5);
 	}
+	return (NULL);
 }
 
 int	is_simulation_running(t_philo *philo)
 {
-	int	result;
+	int	active;
 
+	active = FALSE;
 	pthread_mutex_lock(&philo->table->m_simulation);
-	result = philo->table->sim_running;
+	if (philo->table->sim_running == TRUE)
+		active = TRUE;
 	pthread_mutex_unlock(&philo->table->m_simulation);
-	return (result);
+	return (active);
 }
 
 int	is_someone_dead(t_philo *philo)
 {
-	if ((get_ts(philo) - philo->last_meal) >= philo->table->time_to_die)
+	long	current_time;
+	long	time_since_last_meal;
+
+	current_time = get_ts(philo);
+	time_since_last_meal = current_time - philo->last_meal;
+	if (time_since_last_meal >= philo->table->time_to_die)
 	{
 		set_simulation_status(philo->table, FALSE);
-		process_status(philo, get_ts(philo), DEAD);
+		process_status(philo, current_time, DEAD);
 		pthread_mutex_unlock(&philo->m_meal);
 		return (TRUE);
 	}

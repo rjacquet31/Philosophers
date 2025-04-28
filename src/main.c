@@ -20,14 +20,14 @@ int	main(int ac, char **av)
 	if (check_input(ac, av) == ERROR)
 	{
 		wrong_format();
-		return (process_exit(1, table, "Invalid arguments: check count/types"));
+		return (process_exit(1, table, "Arguments error"));
 	}
 	table = init_program(ac, av);
 	if (!table)
-		return (process_exit(1, table, "Error while initializing the program"));
+		return (process_exit(1, table, "Initialization error"));
 	if (start_simulation(table) == ERROR)
-		return (process_exit(2, table, "Error while threading the philosophy"));
+		return (process_exit(2, table, "threads error"));
 	if (stop_simulation(table) == ERROR)
-		return (process_exit(2, table, "Error while stopping the simulation"));
+		return (process_exit(2, table, "simulation exit error"));
 	return (process_exit(SUCCESS, table, NULL));
 }
