@@ -28,6 +28,6 @@ int	main(int ac, char **av)
 	if (start_simulation(table) == ERROR)
 		return (process_exit(2, table, "threads error"));
 	if (stop_simulation(table) == ERROR)
-		return (process_exit(2, table, "simulation exit error"));
+		return (process_exit(2, table, "simulation error"));
 	return (process_exit(SUCCESS, table, NULL));
 }

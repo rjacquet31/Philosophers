@@ -12,16 +12,21 @@
 
 #include "../philo.h"
 
-void	*monitor_philosophers(void *arg)
+void	*monitor_philosophers(void *ptr)
 {
 	t_table	*table;
 
-	table = (t_table *)arg;
+	table = (t_table *)ptr;
 	set_simulation_status(table, TRUE);
-	while (is_simulation_running(table->philos[0]))
+	while (1)
 	{
-		if (is_end_of_dinner(table))
-			break ;
+		if (is_end_of_dinner(table) == TRUE)
+		{
+			pthread_mutex_lock(&table->m_print);
+			printf("Simulation finished\n");
+			pthread_mutex_unlock(&table->m_print);
+			return (NULL);
+		}
 		ft_msleep(5);
 	}
 	return (NULL);
@@ -29,27 +34,20 @@ void	*monitor_philosophers(void *arg)
 
 int	is_simulation_running(t_philo *philo)
 {
-	int	active;
+	int	result;
 
-	active = FALSE;
 	pthread_mutex_lock(&philo->table->m_simulation);
-	if (philo->table->sim_running == TRUE)
-		active = TRUE;
+	result = philo->table->sim_running;
 	pthread_mutex_unlock(&philo->table->m_simulation);
-	return (active);
+	return (result);
 }
 
 int	is_someone_dead(t_philo *philo)
 {
-	long	current_time;
-	long	time_since_last_meal;
-
-	current_time = get_ts(philo);
-	time_since_last_meal = current_time - philo->last_meal;
-	if (time_since_last_meal >= philo->table->time_to_die)
+	if ((get_ts(philo) - philo->last_meal) >= philo->table->time_to_die)
 	{
 		set_simulation_status(philo->table, FALSE);
-		process_status(philo, current_time, DEAD);
+		process_status(philo, get_ts(philo), DEAD);
 		pthread_mutex_unlock(&philo->m_meal);
 		return (TRUE);
 	}
