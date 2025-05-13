@@ -20,6 +20,8 @@ t_table	*init_program(int ac, char **av)
 	if (!table)
 		return (NULL_ERROR);
 	table->nb_philo = ft_atoi(av[1]);
+	if (ft_atoi(av[1]) > 99999)
+		return (NULL_ERROR);
 	table->time_to_die = ft_atoi(av[2]);
 	table->time_to_eat = ft_atoi(av[3]);
 	table->time_to_sleep = ft_atoi(av[4]);
