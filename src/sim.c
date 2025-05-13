@@ -12,24 +12,23 @@
 
 #include "../philo.h"
 
-void	*run_simulation(void *arg)
+void	*run_simulation(void *ptr)
 {
 	t_philo	*philo;
 
-	philo = (t_philo *)arg;
-	if (philo->id % 2 == 0)
-		usleep(1000);
-	while (is_simulation_running(philo))
-	{
-		if (philo->status == DEAD)
-		{
-			pthread_mutex_lock(&philo->table->m_simulation);
-			philo->table->sim_running = FALSE;
-			pthread_mutex_unlock(&philo->table->m_simulation);
-			break ;
-		}
+	philo = (t_philo *)ptr;
+	pthread_mutex_lock(&philo->m_meal);
+	philo->last_meal = philo->table->start_time;
+	pthread_mutex_unlock(&philo->m_meal);
+	set_simulation_status(philo->table, TRUE);
+	if (philo->table->nb_philo == 1)
+		return (dead(philo));
+	else if (philo->id % 2)
 		start_thinking(philo);
+	while (is_simulation_running(philo) == TRUE)
+	{
 		start_eating_then_sleeping(philo);
+		start_thinking(philo);
 	}
 	return (NULL);
 }
@@ -39,18 +38,18 @@ int	start_simulation(t_table *table)
 	size_t	i;
 
 	table->start_time = get_ms();
-	if (pthread_create(&table->monitoring, NULL,
-			monitor_philosophers, table) != 0)
-		return (process_exit(ERROR, table,
-				"Error: pthread_create (monitor) failed\n"));
-	i = 0;
-	while (i < table->nb_philo)
+	i = -1;
+	while (++i < table->nb_philo)
 	{
 		if (pthread_create(&table->philos[i]->thread, NULL,
-				run_simulation, table->philos[i]) != 0)
-			return (process_exit(ERROR, table,
-					"Error: pthread_create (philo) failed\n"));
-		i++;
+				&run_simulation, table->philos[i]) != 0)
+			return (ERROR);
+	}
+	if (table->nb_philo > 1)
+	{
+		if (pthread_create(&table->monitoring, NULL,
+				&monitor_philosophers, table) != 0)
+			return (ERROR);
 	}
 	return (SUCCESS);
 }
