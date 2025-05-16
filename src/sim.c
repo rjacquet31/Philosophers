@@ -58,12 +58,10 @@ int	stop_simulation(t_table *table)
 {
 	size_t	i;
 
-	pthread_join(table->monitoring, NULL);
-	i = 0;
-	while (i < table->nb_philo)
-	{
+	i = -1;
+	while (++i < table->nb_philo)
 		pthread_join(table->philos[i]->thread, NULL);
-		i++;
-	}
+	if (table->nb_philo > 1)
+		pthread_join(table->monitoring, NULL);
 	return (SUCCESS);
 }
